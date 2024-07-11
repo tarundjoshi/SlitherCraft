@@ -1,4 +1,4 @@
-#Multiplayer Version of Slither.io 
+**Multiplayer Version of Slither.io**
 
 ##Introduction
 Converting a single-player game into a multiplayer version requires careful planning and implementation
