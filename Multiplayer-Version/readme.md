@@ -1,6 +1,6 @@
-**Multiplayer Version of Slither.io**
+# Multiplayer Version of Slither.io
 
-##Introduction
+## Introduction
 Converting a single-player game into a multiplayer version requires careful planning and implementation
 of a stable client server architecture and a proper two way communication between
 a client and a server. The project aims to establish a central server , that acts as an intermediate
@@ -11,7 +11,7 @@ better practice if this is done in the server side to prevent malicious clients 
 messages. This abstract outlines essential guidelines for developing a client server architecture to
 convert the single player version to a multiplayer one. For efficient send/recieval of objects, it is picked into binary image. The size of this object is appended as a header, and the object is padded at the end.
 
-##Server-Side Architecture
+## Server-Side Architecture
 A broadcast function which sends a message to all clients connected.
 At every instance, the server is required to send the following details :
 – Braodcasting the removal of the orbs to all clients.
@@ -22,7 +22,7 @@ as dictionary otherplayerssegments of the form key : value where key is the play
 value is a list of segments of that particular player.
 –Broadcasting snake objects who have died to all the other clients
 
-##Client Side Architecture
+## Client Side Architecture
 The client must send its coordinates at every instant, and information about eating a food particle
 or death whenever needed.
 • Client updates its food orbs list , and also delete the player who has died in its database
