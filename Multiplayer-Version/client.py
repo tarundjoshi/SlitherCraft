@@ -99,7 +99,7 @@ class Player:
         self.game=game
         self.isAlive=True
         self.direction=v2(1,0)
-        self.speed=20 # Speed in terms of update rate. Smaller => Faster
+        self.speed=10 # Speed in terms of update rate. Smaller => Faster
         self.segments=[]
         for i in range(0,121):
             self.segments.append(Segment(game.dimensions/2-i*v2(1,0),self.game))
@@ -110,25 +110,25 @@ class Player:
 
     def extend(self,segs):
         for i in range(0,segs):
-            self.segments.append(Segment(v2(self.segments[-1].pos)-self.direction,self.game))
+            self.segments.append(Segment(v2(self.segments[-1].pos)-(self.segments[-1].pos-self.segments[-2].pos),self.game))
 
     def checkCollsison(self):
         for opp in self.game.opponents:
             for seg in opp.segments:
                 if (v2(seg.pos)-v2(self.segments[0].pos)).length()<30:
                     return True
+        for i in range(70, len(self.segments)):
+            if (v2(self.segments[0].pos)-v2(self.segments[i].pos)).length()<30:
+                return True
+        return False
 
     def update(self):
-        mouse_pos=v2(pygame.mouse.get_pos()) - self.segments[0].rect.center #Get mouse position relative to player
-        body_vec=v2(self.segments[0].pos) - v2(self.segments[1].pos) #Get vector from head to body
-        motion_angle=body_vec.angle_to(mouse_pos) #Get angle between body vector and mouse vector
-        if mouse_pos!=v2(0,0):
-                self.direction=self.direction.rotate(motion_angle/100 if abs(motion_angle)<180 else -motion_angle/100).normalize()
-        else:
-            self.direction=v2(0,0)
+        mouse_pos=v2(pygame.mouse.get_pos()) - self.game.dimensions/2 #Get mouse position relative to player
+        body_vec= (v2(self.segments[0].pos) - v2(self.segments[1].pos)) #Get vector from head to body
+        next_dir = (mouse_pos - body_vec).normalize() #Get next direction
 
         self.segments=self.segments[:-1] #Remove last segment
-        self.segments.insert(0,Segment(self.segments[0].pos+self.direction*1,self.game)) #Insert new segment at the front
+        self.segments.insert(0,Segment(self.segments[0].pos+next_dir,self.game)) #Insert new segment at the front
         if self.checkCollsison():
             self.isAlive=False
             self.game.quit()
@@ -143,6 +143,8 @@ class GameOver():
         self.color=(255,0,0)
         self.text_surface=self.font.render("Game Over !",True,self.color)
         self.text_rect=self.text_surface.get_rect(center=self.pos)
+        self.game.socket.send("END")
+        self.game.socket.close()
         # center_pos = (screen_rect.centerx - text_rect.width // 2, screen_rect.centery - text_rect.height // 2 + 36 * line)
     def draw(self):
         self.game.window.blit(self.text_surface,self.text_rect)
@@ -191,7 +193,7 @@ class Orb:
     def draw(self):
         pos=self.game.camera.transformed_coords(self.pos)
         tempRect=pygame.Rect(float(pos.x),float(pos.y),self.orb_size,self.orb_size)
-        pygame.draw.rect(self.game.window,self.color,tempRect)
+        pygame.draw.circle(self.game.window,self.color,pos,self.orb_size/2)
 
     def update(self):
         if pygame.Rect.colliderect(self.rect,self.game.player.segments[0].rect):
@@ -217,7 +219,7 @@ class Game:
 
         self.opponents=[]
 
-        self.socket=Socket('localhost',8000)
+        self.socket=Socket('localhost',5555)
         self.player.uid=self.socket.connect()
 
         self.camera=Camera(self)
@@ -295,7 +297,6 @@ class Game:
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     self.quit()
-                    self.socket.send('END')
                     pygame.quit()
                     sys.exit()
                 elif event.type==self.PLAYER_UPDATE:

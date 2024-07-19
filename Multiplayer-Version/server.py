@@ -61,7 +61,7 @@ class Socket:
 
 class GameServer:
     def __init__(self):
-        self.sock=Socket('localhost',8000)
+        self.sock=Socket('localhost',5555)
         self.players={}
         self.orbs=[]
         self.uid_counter=0
